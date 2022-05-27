@@ -3,9 +3,12 @@ import { createStore } from 'vuex'
 
 
 const store = createStore({
-    
+
     state() {
         return {
+
+            authenticated: false,
+
 
 
             myUserData: {
@@ -16,7 +19,7 @@ const store = createStore({
                 userContent: 'Hello brothers',
             },
 
-            cardData:[
+            cardData: [
                 {
                     uid: 2,
                     authorName: 'Jeorge',
@@ -99,6 +102,13 @@ const store = createStore({
             // const a = store.cardData ;
             // console.log(a)
 
+        }
+        ,
+        SystemLogin(state) {
+            state.authenticated = true
+        },
+        SystemLogout(state) {
+            state.authenticated = false
         }
     }
 })
