@@ -9,33 +9,34 @@
           ></p>
           <p class="profile-name">{{ item.authorName }}</p>
         </div>
-        <img
+        <!-- <img
           class="upload-image"
           :style="{ backgroundImage: `url(${item.uploadImageUrl})` }"
-        />
+        /> -->
         <div class="card-body">
-          <p class="card-text" style="clear: both"></p>
+          <div class="mb-3" style="clear: both">
+            <p class="card-text">{{ item.content }}</p>
+          </div>
           <div class="buttons">
             <img
               class="buttons-likes"
               style="float: left"
               src="./../assets/images/heart.black.png"
-              @click="$store.dispatch('likeToPost', item)"
+              @click="$store.commit('LikeToPost', item)"
             />
-            <p class="buttons-likes" style="float: left">
+            <p class="buttons-likes display-likes" style="float: left">
               {{ item.likes }}
             </p>
             <img
+              @click="CheckChatRoomAndCreateChatRoom(item)"
+              class="buttons-likes"
               src="./../assets/images/mail.png"
               style="float: left"
-              class="buttons-message"
             />
           </div>
-          <div style="clear: both">
-            <p class="card-text">{{ item.content }}</p>
-          </div>
+          <div style="clear: both"></div>
           <div>
-            <p class="text-small card-text pt-1" >{{ item.date }}</p>
+            <p class="text-small card-text pt-1">{{ item.date }}</p>
           </div>
         </div>
       </div>
@@ -45,6 +46,7 @@
 
 <script>
 import cardData from "./../assets/dataCard";
+import { db } from "../main.js";
 
 export default {
   data() {
@@ -53,6 +55,75 @@ export default {
     };
   },
   props: {},
+  watch: {},
+  methods: {
+    CheckChatRoomAndCreateChatRoom(payload) {
+      var isChatRoomExist = false;
+      console.log(payload)
+
+      db.collection("chatroom")
+        .where("whoUid", "array-contains", this.$store.state.myUserData.uid)
+        .get()
+        .then((querySnapshot) => {
+          querySnapshot.forEach((doc) => {
+            console.log("already chatroom exist");
+            console.log(doc.data());
+            if (
+              doc.data().whoUid.includes(this.$store.state.myUserData.uid) &&
+              doc.data().whoUid.includes(payload.authorUid)
+            ) {
+              isChatRoomExist = true;
+            }
+          });
+          console.log(isChatRoomExist);
+          if (isChatRoomExist) {
+            this.$router.push("/chat");
+          } else {
+            this.CreateChatRoom(payload);
+          }
+        })
+        .catch((error) => {
+          console.log(error);
+        });
+    },
+    CreateChatRoom(payload) {
+      var chatData;
+      chatData = {
+        uid: "",
+        whoUid: [this.$store.state.myUserData.uid, payload.authorUid],
+        who: [this.$store.state.myUserData.userName, payload.authorName],
+        startDate: new Date(),
+        lastDate: new Date(),
+      };
+      console.log(chatData);
+      console.log(payload);
+      db.collection("chatroom")
+        .add(chatData)
+        .then((querySnapshot) => {
+          console.log(querySnapshot);
+        })
+        .catch((error) => {
+          console.log(error);
+        });
+    },
+  },
+
+  // should change render just one time.....
+  mounted() {
+    if (this.$store.state.updatePostCycle == 0) {
+      db.collection("posts")
+        .orderBy("date")
+        .get()
+        .then((snapshot) => {
+          snapshot.forEach((post) => {
+            var addUid = post.data();
+            addUid.uid = post.id;
+            this.$store.state.cardData.unshift(addUid);
+            this.$store.state.updatePostCycle += 1;
+          });
+        });
+    }
+  },
 };
 </script>
 
@@ -118,4 +189,7 @@ body {
   margin-bottom: 0;
 }
 
+.display-likes {
+  width: 50px;
+}
 </style>

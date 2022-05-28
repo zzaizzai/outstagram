@@ -2,6 +2,15 @@
   <div class="mt-5 p-5 w-25 mx-auto">
     <div class="container mt-3">
       <div class="mb-3">
+        <div class="mb-3">
+          <input
+            type="name"
+            class="form-control"
+            placeholder="name"
+            id="name"
+            @change="inputName = $event.target.value"
+          />
+        </div>
         <input
           type="email"
           class="form-control"
@@ -28,7 +37,7 @@
           id="login"
           @click="Register"
         >
-          log In
+          SignUp
         </button>
         <button type="submit" class="btn btn-danger m-3" id="logout">
           log Out
@@ -36,8 +45,10 @@
       </div>
 
       <div type="text" class="flex-grow-1">
-        <p class="error-message text-danger" id="error-message">{{errorMessage}}</p>
-        <p class="text-primary" id="success-message">{{successMessage}}</p>
+        <p class="error-message text-danger" id="error-message">
+          {{ errorMessage }}
+        </p>
+        <p class="text-primary" id="success-message">{{ successMessage }}</p>
       </div>
     </div>
   </div>
@@ -50,12 +61,12 @@ import firebase from "firebase/app";
 import "firebase/firestore";
 import "firebase/auth";
 
-
 export default {
   data() {
     return {
       inputEmail: "test@gmail.com",
       inputPassword: "password",
+      inputName: "",
       errorMessage: "error",
       successMessage: "success",
     };
@@ -75,19 +86,42 @@ export default {
     },
 
     Register() {
-
       var email = this.inputEmail;
       var password = this.inputPassword;
+      var name = this.inputName;
 
       firebase
         .auth()
         .createUserWithEmailAndPassword(email, password)
         .then((result) => {
-          console.log(result);
-          console.log("hello new friend");
+          console.log(result.user.uid);
+          console.log("successfully Signed Up");
+          window.sessionStorage.setItem("user", JSON.stringify(result));
+
+          var inputUserData = {
+            uid: result.user.uid,
+            userEmail: email,
+            userName: name,
+            userProfileurl: "https://placeimg.com/500/500/people",
+            userContent: "Hello brothers",
+            role: 'normal'
+          };
+          console.log(inputUserData);
+
+          //save user info
+          db.collection("user")
+            .doc(result.user.uid)
+            .set(inputUserData)
+            .then(() => {
+              console.log("successfully Saved User data");
+              this.$store.dispatch('NewUserProfile',inputUserData )
+            })
+            .catch((error2) => {
+              console.log(error2);
+            });
         })
         .catch((error) => {
-          this.errorMessage = error
+          this.errorMessage = error;
           console.log(error);
           console.log("failed to register");
         });

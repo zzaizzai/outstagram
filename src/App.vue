@@ -1,62 +1,69 @@
 <template>
-  <nav class="navbar navbar-expand-lg navbar-light bg-light fixed-top">
-    <div class="container-fluid">
-      <a class="navbar-brand" href="/">
-        <router-link style="color: black; text-decoration-line: none" to="/"
-          >Outstagram</router-link
+  <nav class="navbar navbar-expand-sm navbar-light bg-light sticky-top">
+    <div class="navbar-center">
+      <div class="container-fluid">
+        <router-link
+          style="color: black; text-decoration-line: none"
+          class="navbar-brand float-left outstagram mx-5"
+          to="/"
         >
-      </a>
-      <button
-        class="navbar-toggler"
-        type="button"
-        data-bs-toggle="collapse"
-        data-bs-target="#navbarSupportedContent"
-        aria-controls="navbarSupportedContent"
-        aria-expanded="false"
-        aria-label="Toggle navigation"
-      >
-        <span class="navbar-toggler-icon"></span>
-      </button>
-      <div class="collapse navbar-collapse" id="navbarSupportedContent">
-        <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-          <li class="nav-item">
-            <a class="nav-link" aria-current="page">
-              <router-link to="/">
-                <img src="./assets/images/home.png" style="width: 25px" />
-              </router-link>
-            </a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" aria-current="page">
-              <router-link to="/chat"
-                ><img src="./assets/images/mail.png" style="width: 25px" />
-              </router-link>
-            </a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link active" aria-current="page" href="#"
-              ><router-link
-                style="color: black; text-decoration-line: none"
-                to="/write"
+          Outstagram
+        </router-link>
+        <div
+          class="collapse navbar-collapse float-left mx-5"
+          id="navbarSupportedContent"
+        >
+          <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+            <li class="nav-item">
+              <a class="nav-link" aria-current="page">
+                <router-link to="/">
+                  <img src="./assets/images/home.png" style="width: 25px" />
+                </router-link>
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" aria-current="page">
+                <router-link to="/chat"
+                  ><img src="./assets/images/mail.png" style="width: 25px" />
+                </router-link>
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link active" aria-current="page" href="#"
+                ><router-link
+                  style="color: black; text-decoration-line: none"
+                  to="/write"
+                >
+                  <img
+                    src="./assets/images/write.png"
+                    style="width: 25px" /></router-link
+              ></a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link active" aria-current="page" href="#">
+                <router-link
+                  style="color: black; text-decoration-line: none"
+                  v-bind:to="{
+                    name: 'profile',
+                    params: { id: $store.state.myUserData.userEmail },
+                  }"
+                >
+                  <img
+                    src="./assets/images/profile.png"
+                    style="width: 25px" /></router-link
+              ></a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link active" aria-current="page" href="#"
+                ><router-link
+                  style="color: black; text-decoration-line: none"
+                  to="/signin"
+                  >sign in</router-link
+                ></a
               >
-                Write</router-link
-              ></a
-            >
-          </li>
-          <li class="nav-item">
-            <a class="nav-link active" aria-current="page" href="#">
-              <router-link
-                style="color: black; text-decoration-line: none"
-                v-bind:to="{
-                  name: 'profile',
-                  params: { id: $store.state.myUserData.userID },
-                }"
-              >
-                Profile</router-link
-              ></a
-            >
-          </li>
-        </ul>
+            </li>
+          </ul>
+        </div>
       </div>
     </div>
   </nav>
@@ -67,12 +74,13 @@
 <script>
 import { defineComponent } from "vue";
 
+
 export default defineComponent({
   name: "App",
   data() {
     return {};
   },
-  mounted() {},
+
 });
 </script>
 
@@ -83,5 +91,17 @@ export default defineComponent({
   -moz-osx-font-smoothing: grayscale;
   text-align: center;
   color: #2c3e50;
+}
+
+.navbar-center {
+  margin: auto;
+}
+
+.float-left {
+  float: left;
+}
+
+.outstagram {
+  font-family: "Franklin Gothic Medium", "Arial Narrow", Arial, sans-serif;
 }
 </style>

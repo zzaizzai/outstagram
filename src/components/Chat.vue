@@ -4,35 +4,68 @@
       <div class="col-3">
         <ul class="list-group chat-list">
           <li class="list-group-item">
-            <h6>currentChat: {{ currentChat }}</h6>
+            <h6>currentChatUid: {{ currentChatUid }}</h6>
           </li>
 
-          <div v-for="item in $store.state.chatDataList" :key="item">
+          <div v-for="item in chatRoom" :key="item">
             <li
-              v-bind:class="{ active: currentChat == item.uid }"
+              v-bind:class="{ active: currentChatUid == item.uid }"
               @click="
-                currentChat = item.uid;
+                currentChatUid = item.uid;
                 checkChatOponent(item);
+                FetchMeesages(item.parentUid);
               "
-              class="list-group-item"
+              class="list-group-item chat-list-box"
             >
-              <h6>Chat Oponent</h6>
+              <h6>{{ item.uid }}</h6>
+              <p class="chatroom-time">{{ item.lastDate }}</p>
             </li>
           </div>
+          <button @click="FetchChatRoom">채팅방 패치</button>
         </ul>
       </div>
 
       <div class="col-6 p-3">
         <div>{{ chatOponent }}</div>
         <div class="chat-room">
-          <ul class="list-group chat-content">
-            <li><span class="chat-box">ㅎㅇ</span></li>
+          <div></div>
+          <ul class="list-group chat-content" ref="scrollMe" id="scrollMe">
+            <div v-for="message in chatContent" :key="message">
+              <li>
+                <div class="row">
+                  <div>
+                    <span
+                      class="chat-date text-small"
+                      v-bind:class="{
+                        minedate:
+                          $store.state.myUserData.uid ==
+                          message.chatUserUidFrom,
+                      }"
+                      >{{ message.date }}</span
+                    >
+                  </div>
+
+                  <div>
+                    <span
+                      class="chat-box"
+                      v-bind:class="{
+                        mine:
+                          $store.state.myUserData.uid ==
+                          message.chatUserUidFrom,
+                      }"
+                      >{{ message.chatContent }}</span
+                    >
+                  </div>
+                </div>
+              </li>
+            </div>
+            <!-- <li><span class="chat-box">ㅎㅇ</span></li>
             <li><span class="chat-box mine">ㅎㅇ</span></li>
-            <li><span class="chat-box mine">ㅎㅇ</span></li>
+            <li><span class="chat-box mine">ㅎㅇ</span></li> -->
           </ul>
           <div class="input-group">
-            <input class="form-control" id="chat-input" />
-            <button class="btn btn-secondary">send</button>
+            <input class="form-control" id="chat-input" v-model="sendMessage" />
+            <button class="btn btn-secondary" @click="SendMessage">send</button>
           </div>
         </div>
       </div>
@@ -42,23 +75,177 @@
 
 <script>
 // import { mapMutations, mapState } from "vuex";
+import { db } from "../main.js";
 
 export default {
   name: "chat",
+  created() {},
+  mounted() {
+    //i thought reverse order would wrok well
+    // i dont know why this order works well
+    this.FetchMeesages(this.currentChatUid);
+    console.log("check async");
+    this.FetchChatRoom();
+
+    // window.addEventListener("popstate", this.changeState, false);
+  },
   data() {
     return {
-      currentChat: 0,
+      sendMessage: "",
+      currentChatUid: "1",
       chatOponent: "Kim",
+      chatOponentUid: "2",
+
+      chatContent: [
+        {
+          parentUid: "2",
+          chatUserUidFrom: "2",
+          chatUserUidTo: "1",
+          chatContent: "hello",
+          date: "today",
+          myMessage: true,
+        },
+        {
+          parentUid: "1",
+          chatUserUidFrom: "1",
+          chatUserUidTo: "2",
+          chatContent: "good",
+          date: "today",
+          myMessage: true,
+        },
+      ],
+      chatRoom: [
+        // {
+        //   uid: "0",
+        //   whoUid: ["0", "2"],
+        //   who: ["admin", "Kims"],
+        //   startDate: 22 - 5 - 20,
+        //   lastDate: 22 - 5 - 30,
+        // },
+        // {
+        //   uid: "1",
+        //   whoUid: ["0", "3"],
+        //   who: ["admin", "Elaski"],
+        //   startDate: 22 - 5 - 21,
+        //   lastDate: 22 - 5 - 31,
+        // },
+      ],
     };
   },
   methods: {
+    SendMessage() {
+      if (this.sendMessage.length == 0) {
+        console.log("more than 1 character");
+        return;
+      }
+      console.log("send");
+      var sendMessageData = {
+        parentUid: this.currentChatUid,
+        chatUserUidFrom: this.$store.state.myUserData.uid,
+        chatUserUidTo: this.chatOponentUid,
+        chatContent: this.sendMessage,
+        date: new Date(),
+      };
+
+      console.log(sendMessageData);
+      db.collection("messages")
+        .add(sendMessageData)
+        .then(() => {
+          this.sendMessage = "";
+          console.log("successfully sended");
+        })
+        .catch(() => {
+          console.log("Failed to send");
+        });
+
+      db.collection("chatroom")
+        .doc(this.currentChatUid)
+        .update({ lastDate: sendMessageData.date });
+    },
+
+    // FetchMeesages(payload) {
+    //   console.log(payload)
+    //   db.collection("messages")
+    //     .where("parentUid", "==", payload)
+    //     .orderBy("date", "desc")
+    //     .onSnapshot((result) => {
+    //       this.chatContent.splice(0, this.chatContent.length);
+    //       result.forEach((doc) => {
+    //         this.chatContent.unshift(doc.data());
+    //       });
+    //       console.log('fetch message done')
+    //     });
+    // },
+    FetchMeesages() {
+      console.log(this.currentChatUid);
+
+      db.collection("messages")
+        .where("parentUid", "==", this.currentChatUid)
+        .orderBy("date", "desc")
+        .onSnapshot((result) => {
+          this.chatContent.splice(0, this.chatContent.length);
+          result.forEach((doc) => {
+            console.log(doc.data());
+            console.log(doc.data().date);
+            var changedDate = doc.data();
+            changedDate.date = changedDate.date.toDate().toLocaleString();
+            this.chatContent.unshift(changedDate);
+          });
+          console.log("currentchatuid: " + this.currentChatUid);
+          console.log("fetch message done");
+        });
+    },
+    FetchChatRoom() {
+      var setCurrentChatUidAsLastestChatUid = 0;
+      this.currentChatUid = "0";
+
+      db.collection("chatroom")
+        .where("whoUid", "array-contains", this.$store.state.myUserData.uid)
+        .orderBy("lastDate", "desc")
+        .onSnapshot((querySnapshot) => {
+          //reset chatroom
+          this.chatRoom.splice(0, this.chatRoom.length);
+
+          //get chatroom drom db
+          querySnapshot.forEach((doc) => {
+            var addUidAndChangedDate = doc.data();
+            addUidAndChangedDate.uid = doc.id;
+            addUidAndChangedDate.lastDate = addUidAndChangedDate.lastDate
+              .toDate()
+              .toLocaleString();
+
+            this.chatRoom.push(addUidAndChangedDate);
+
+            // set CurrentChatUid as LastestChatUid from db
+            if (setCurrentChatUidAsLastestChatUid == 0) {
+              this.currentChatUid = addUidAndChangedDate.uid;
+            }
+            setCurrentChatUidAsLastestChatUid += 1;
+          });
+          console.log("fetch chatroom done");
+        });
+    },
+
     checkChatOponent(payload) {
-      if (payload.whoUid[0] == this.$store.state.myUserData.uid) {
+      if (payload.who[0] == this.$store.state.myUserData.userName) {
         this.chatOponent = payload.who[1];
-      } else if (payload.whoUid[1] == this.$store.state.myUserData.uid) {
+      } else if (payload.who[1] == this.$store.state.myUserData.userName) {
         this.chatOponent = payload.who[0];
+      } else {
+        this.chatOponent = "???";
+      }
+      if (payload.whoUid[0] == this.$store.state.myUserData.uid) {
+        this.chatOponentUid = payload.whoUid[1];
+      } else if (payload.whoUid[1] == this.$store.state.myUserData.uid) {
+        this.chatOponentUid = payload.whoUid[0];
       }
     },
+  },
+  watch: {
+    // chatRoom() {
+    //   var container = this.$el.querySelector("#scrollMe");
+    //   container.scrollTop = container.scrollHeight;
+    // },
   },
 };
 </script>
@@ -75,6 +262,11 @@ export default {
   border-radius: 5px;
   float: left;
 }
+.chat-list-box:hover {
+  cursor: pointer;
+  background-color: rgb(183, 221, 238);
+  transition: 0.2s;
+}
 
 .chat-content {
   height: 450px;
@@ -88,5 +280,15 @@ export default {
 .mine {
   float: right;
   background: skyblue;
+}
+.chat-date {
+  float: left;
+}
+.minedate {
+  float: right;
+}
+
+.chatroom-time {
+  font-size: 8px;
 }
 </style>

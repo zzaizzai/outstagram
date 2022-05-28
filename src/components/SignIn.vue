@@ -45,6 +45,7 @@
           {{ errorMessage }}
         </p>
         <p class="text-primary" id="success-message">{{ successMessage }}</p>
+        <p><router-link to="/signup" >be a friend</router-link></p>
       </div>
     </div>
   </div>
@@ -90,9 +91,25 @@ export default {
           this.successMessage = "Welcome Back";
           console.log(result);
           console.log("Welcome Back");
-          this.$store.commit("SystemLogin");
-          this.$router.push("/");
+
           window.sessionStorage.setItem("user", JSON.stringify(result));
+
+          db.collection("user")
+            .doc(result.user.uid)
+            .get()
+            .then((userInfo) => {
+              console.log(userInfo.data());
+              var data = {
+                uid: userInfo.data().uid,
+                userName: userInfo.data().userName,
+                userEmail: userInfo.data().userEmail,
+                userProfileurl: "https://placeimg.com/500/500/people",
+                userContent: userInfo.data().userContent,
+              };
+              this.$store.commit("SignInUserProfile", data);
+              console.log("my profile update done");
+              this.$router.push("/");
+            });
         })
         .catch((error) => {
           this.errorMessage = error;
@@ -105,16 +122,14 @@ export default {
         .auth()
         .signOut()
         .then((result) => {
-          this.$store.commit("SystemLogout");
           window.sessionStorage.removeItem("user");
-          console.log(result)
-          console.log('logged out')
+          console.log(result);
+          console.log("logged out");
           this.successMessage = "Good bye";
         })
         .catch((error) => {
-            console.log(error)
-            console.log('failed to logged out')
-
+          console.log(error);
+          console.log("failed to logged out");
         });
     },
   },
