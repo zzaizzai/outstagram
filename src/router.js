@@ -47,6 +47,7 @@ const routes = [
   {
     path: "/",
     component: Home,
+
   },
   {
     path: "/:404",
@@ -61,7 +62,7 @@ const router = createRouter({
 
 //check login state, if login state is false, redirect to signin page
 router.beforeEach((to) => {
-  var userData = JSON.parse(window.sessionStorage.getItem('user')) 
+  var userData = JSON.parse(window.sessionStorage.getItem('user'))
   if (to.meta.requiresAuth && userData == null) {
     return {
       name: 'SignIn',

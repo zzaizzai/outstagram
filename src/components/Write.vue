@@ -9,7 +9,7 @@
             id=""
             @input="uploadContent = $event.target.value"
           />
-          <button type="button" @click="uploadYourPost">Upload</button>
+          <button type="button" @click="uploadMyPost">Upload</button>
         </div>
         <div class="message-error">
           {{ writeErrorMessage }}
@@ -20,6 +20,8 @@
 </template>
 
 <script>
+import { db } from "../main.js";
+
 export default {
   data() {
     return {
@@ -28,22 +30,36 @@ export default {
     };
   },
   methods: {
-    uploadYourPost() {
+    uploadMyPost() {
       var myPost = {
-        uid: 4,
-        authorName: "Jeorge",
+        uid: "",
+        authorName: this.$store.state.myUserData.userName,
+        authorUid: this.$store.state.myUserData.uid,
         content: this.uploadContent,
-        authorProfileUrl: "https://placeimg.com/640/480/tech",
+        authorProfileUrl: this.$store.state.myUserData.userProfileurl,
         uploadImageUrl: "https://placeimg.com/640/480/animals",
         likes: 0,
         date: new Date(),
       };
 
       if (this.uploadContent.length > 0) {
-        this.$store.state.cardData.unshift(myPost);
+        // this.$store.state.cardData.unshift(myPost);
+        uploadPost();
         this.$router.push("/");
       } else {
         this.writeErrorMessage = "write  more than one character";
+      }
+
+      function uploadPost() {
+        db.collection("posts")
+          .add(myPost)
+          .then((result) => {
+            console.log(myPost);
+            console.log(result);
+          })
+          .catch((error) => {
+            console.log(error);
+          });
       }
     },
   },

@@ -1,6 +1,6 @@
 <template>
   <div class="mypage-box">
-    <div style="margin-top: 100px">
+    <div style="margin-top: 100px" class="p-4">
       <img
         class="mypage-imag"
         alt=""
@@ -10,34 +10,35 @@
       />
     </div>
     <div>
-      <p>{{ $store.state.myUserData.userName }}</p>
-      <p>{{$store.state.myUserData.userContent}}</p>
+      <p>Name: {{ $store.state.myUserData.userName }}</p>
+      <p>Email: {{ $store.state.myUserData.userEmail }}</p>
+      <p>Comment: {{ $store.state.myUserData.userContent }}</p>
+      <p>{{ $store.state.myUserData.uid }}</p>
     </div>
   </div>
 </template>
 
 <script>
 export default {
-  data(){
+  data() {
     return {
-      user: ''
-    }
+      user: "",
+    };
   },
 
-  mounted(){
-    this.user = this.$route.params.id
-
-  }
+  mounted() {
+    this.user = this.$route.params.id;
+  },
 };
 </script>
 
 <style>
 .mypage-box {
   width: 500px;
+  height: 500px;
+  border-radius: 20px;
   margin: auto;
   background: cornsilk;
-  
-
 }
 .mypage-imag {
   width: 150px;
@@ -46,5 +47,4 @@ export default {
   border-radius: 100px;
   float: left;
 }
-
 </style>
