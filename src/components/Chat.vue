@@ -29,7 +29,13 @@
         <div>{{ chatOponent }}</div>
         <div class="chat-room">
           <div></div>
-          <ul class="list-group chat-content" ref="scrollMe" id="scrollMe">
+          <ul
+            class="list-group chat-content"
+            overflow-y:
+            scroll
+            ref="scrollMe"
+            id="scrollMe"
+          >
             <div v-for="message in chatContent" :key="message">
               <li>
                 <div class="row">
@@ -67,6 +73,7 @@
             <input class="form-control" id="chat-input" v-model="sendMessage" />
             <button class="btn btn-secondary" @click="SendMessage">send</button>
           </div>
+          <button @click="ScrollToBottom">down</button>
         </div>
       </div>
     </div>
@@ -81,39 +88,16 @@ export default {
   name: "chat",
   created() {},
   mounted() {
-    //i thought reverse order would wrok well
-    // i dont know why this order works well
-    this.FetchMeesages(this.currentChatUid);
-    console.log("check async");
     this.FetchChatRoom();
-
-    // window.addEventListener("popstate", this.changeState, false);
   },
   data() {
     return {
       sendMessage: "",
-      currentChatUid: "1",
+      currentChatUid: "",
       chatOponent: "Kim",
       chatOponentUid: "2",
 
-      chatContent: [
-        {
-          parentUid: "2",
-          chatUserUidFrom: "2",
-          chatUserUidTo: "1",
-          chatContent: "hello",
-          date: "today",
-          myMessage: true,
-        },
-        {
-          parentUid: "1",
-          chatUserUidFrom: "1",
-          chatUserUidTo: "2",
-          chatContent: "good",
-          date: "today",
-          myMessage: true,
-        },
-      ],
+      chatContent: [],
       chatRoom: [
         // {
         //   uid: "0",
@@ -133,6 +117,11 @@ export default {
     };
   },
   methods: {
+    ScrollToBottom() {
+      let container = this.$el.querySelector("#scrollMe");
+      container.scrollTop = container.scrollHeight;
+      console.log("scrolltobottom");
+    },
     SendMessage() {
       if (this.sendMessage.length == 0) {
         console.log("more than 1 character");
@@ -158,6 +147,8 @@ export default {
           console.log("Failed to send");
         });
 
+      this.ScrollToBottom();
+
       db.collection("chatroom")
         .doc(this.currentChatUid)
         .update({ lastDate: sendMessageData.date });
@@ -176,25 +167,56 @@ export default {
     //       console.log('fetch message done')
     //     });
     // },
-    FetchMeesages() {
+    async FetchMeesages() {
       console.log(this.currentChatUid);
 
-      db.collection("messages")
-        .where("parentUid", "==", this.currentChatUid)
-        .orderBy("date", "desc")
-        .onSnapshot((result) => {
-          this.chatContent.splice(0, this.chatContent.length);
-          result.forEach((doc) => {
-            console.log(doc.data());
-            console.log(doc.data().date);
-            var changedDate = doc.data();
-            changedDate.date = changedDate.date.toDate().toLocaleString();
-            this.chatContent.unshift(changedDate);
+      var getDB = new Promise((success) => {
+        db.collection("messages")
+          .where("parentUid", "==", this.currentChatUid)
+          .orderBy("date", "desc")
+          .onSnapshot((result) => {
+            this.chatContent.splice(0, this.chatContent.length);
+            result.forEach((doc) => {
+              console.log(doc.data());
+              console.log(doc.data().date);
+              var changedDate = doc.data();
+              changedDate.date = changedDate.date.toDate().toLocaleString();
+              this.chatContent.unshift(changedDate);
+            });
           });
-          console.log("currentchatuid: " + this.currentChatUid);
-          console.log("fetch message done");
-        });
+        console.log("good");
+        success("good");
+      });
+
+      try {
+        var result = await getDB;
+        console.log("currentchatuid: " + this.currentChatUid);
+        console.log("fetch message done");
+        this.ScrollToBottom();
+        console.log(result);
+      } catch {
+        console.log("promise wrong");
+      }
+
+      // db.collection("messages")
+      //   .where("parentUid", "==", this.currentChatUid)
+      //   .orderBy("date", "desc")
+      //   .onSnapshot((result) => {
+      //     this.chatContent.splice(0, this.chatContent.length);
+      //     result.forEach((doc) => {
+      //       console.log(doc.data());
+      //       console.log(doc.data().date);
+      //       var changedDate = doc.data();
+      //       changedDate.date = changedDate.date.toDate().toLocaleString();
+      //       this.chatContent.unshift(changedDate);
+      //     });
+      //   });
+
+      // console.log("currentchatuid: " + this.currentChatUid);
+      // console.log("fetch message done");
+      // this.ScrollToBottom();
     },
+
     FetchChatRoom() {
       var setCurrentChatUidAsLastestChatUid = 0;
       this.currentChatUid = "0";
@@ -215,6 +237,7 @@ export default {
               .toLocaleString();
 
             this.chatRoom.push(addUidAndChangedDate);
+            this.ScrollToBottom();
 
             // set CurrentChatUid as LastestChatUid from db
             if (setCurrentChatUidAsLastestChatUid == 0) {
@@ -242,10 +265,10 @@ export default {
     },
   },
   watch: {
-    // chatRoom() {
-    //   var container = this.$el.querySelector("#scrollMe");
-    //   container.scrollTop = container.scrollHeight;
-    // },
+    chatContent() {
+      this.ScrollToBottom();
+      console.log("watching");
+    },
   },
 };
 </script>

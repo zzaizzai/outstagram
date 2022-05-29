@@ -18,9 +18,26 @@
             <p class="card-text">{{ item.content }}</p>
           </div>
           <div class="buttons">
-            <img
+            <!-- <img
+              v-bind:class="{
+                liked: item.liked == true,
+              }"
               class="buttons-likes"
-              style="float: left"
+              style="float: left; liked"
+              src="./../assets/images/heart.black.png"
+              @click="$store.commit('LikeToPost', item)"
+            /> -->
+            <img
+              v-if="item.liked == true"
+              class="buttons-likes"
+              style="float: left; liked"
+              src="./../assets/images/heart.png"
+              @click="$store.commit('LikeToPost', item)"
+            />
+            <img
+              v-else
+              class="buttons-likes"
+              style="float: left; liked"
               src="./../assets/images/heart.black.png"
               @click="$store.commit('LikeToPost', item)"
             />
@@ -59,7 +76,7 @@ export default {
   methods: {
     CheckChatRoomAndCreateChatRoom(payload) {
       var isChatRoomExist = false;
-      console.log(payload)
+      console.log(payload);
 
       db.collection("chatroom")
         .where("whoUid", "array-contains", this.$store.state.myUserData.uid)
@@ -109,7 +126,8 @@ export default {
   },
 
   // should change render just one time.....
-  mounted() {
+  beforeCreate() {
+   
     if (this.$store.state.updatePostCycle == 0) {
       db.collection("posts")
         .orderBy("date")
@@ -123,6 +141,7 @@ export default {
           });
         });
     }
+     this.$store.commit("FetchLikes");
   },
 };
 </script>
@@ -158,7 +177,7 @@ body {
   cursor: pointer;
 }
 .buttons-likes:hover {
-  filter: brightness(1.2);
+  filter: brightness(1.6);
 }
 
 .buttons-message {
@@ -191,5 +210,9 @@ body {
 
 .display-likes {
   width: 50px;
+}
+
+.liked {
+  background: red;
 }
 </style>
