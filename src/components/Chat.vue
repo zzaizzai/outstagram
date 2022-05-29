@@ -17,7 +17,10 @@
               "
               class="list-group-item chat-list-box"
             >
-              <h6>{{ item.uid }}</h6>
+              <h6 v-if="item.who[0] == $store.state.myUserData.userName">
+                {{ item.who[1] }}
+              </h6>
+              <h6 v-else>{{ item.who[0] }}</h6>
               <p class="chatroom-time">{{ item.lastDate }}</p>
             </li>
           </div>
@@ -73,7 +76,7 @@
             <input class="form-control" id="chat-input" v-model="sendMessage" />
             <button class="btn btn-secondary" @click="SendMessage">send</button>
           </div>
-          <button @click="ScrollToBottom">down</button>
+          <div class="down-button" style="font-size: 20px"  @click="ScrollToBottom">▽</div>
         </div>
       </div>
     </div>
@@ -86,9 +89,10 @@ import { db } from "../main.js";
 
 export default {
   name: "chat",
-  created() {},
-  mounted() {
+  created() {
     this.FetchChatRoom();
+  },
+  mounted() {
   },
   data() {
     return {
@@ -177,8 +181,6 @@ export default {
           .onSnapshot((result) => {
             this.chatContent.splice(0, this.chatContent.length);
             result.forEach((doc) => {
-              console.log(doc.data());
-              console.log(doc.data().date);
               var changedDate = doc.data();
               changedDate.date = changedDate.date.toDate().toLocaleString();
               this.chatContent.unshift(changedDate);
@@ -220,6 +222,7 @@ export default {
     FetchChatRoom() {
       var setCurrentChatUidAsLastestChatUid = 0;
       this.currentChatUid = "0";
+      console.log("temporay set curretn chat  uid 0")
 
       db.collection("chatroom")
         .where("whoUid", "array-contains", this.$store.state.myUserData.uid)
@@ -242,6 +245,9 @@ export default {
             // set CurrentChatUid as LastestChatUid from db
             if (setCurrentChatUidAsLastestChatUid == 0) {
               this.currentChatUid = addUidAndChangedDate.uid;
+              console.log(this.currentChatUid)
+              this.FetchMeesages(this.currentChatUid);
+              
             }
             setCurrentChatUidAsLastestChatUid += 1;
           });
@@ -269,6 +275,7 @@ export default {
       this.ScrollToBottom();
       console.log("watching");
     },
+    chatRoom() {},
   },
 };
 </script>
@@ -313,5 +320,9 @@ export default {
 
 .chatroom-time {
   font-size: 8px;
+}
+
+.down-button:hover{
+  cursor: pointer;
 }
 </style>

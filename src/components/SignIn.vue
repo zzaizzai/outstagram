@@ -92,8 +92,6 @@ export default {
           console.log(result);
           console.log("Welcome Back");
 
-          window.sessionStorage.setItem("user", JSON.stringify(result));
-
           db.collection("user")
             .doc(result.user.uid)
             .get()
@@ -106,6 +104,8 @@ export default {
                 userProfileurl: "https://placeimg.com/500/500/people",
                 userContent: userInfo.data().userContent,
               };
+
+              sessionStorage.setItem("user", JSON.stringify(data));
               this.$store.commit("SignInUserProfile", data);
               console.log("my profile update done");
               this.$router.push("/");
@@ -122,7 +122,7 @@ export default {
         .auth()
         .signOut()
         .then((result) => {
-          window.sessionStorage.removeItem("user");
+          sessionStorage.removeItem("user");
           console.log(result);
           console.log("logged out");
           this.successMessage = "Good bye";

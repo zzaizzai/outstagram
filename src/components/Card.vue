@@ -66,6 +66,7 @@ import cardData from "./../assets/dataCard";
 import { db } from "../main.js";
 
 export default {
+  setup() {},
   data() {
     return {
       cardData: cardData,
@@ -97,12 +98,14 @@ export default {
             this.$router.push("/chat");
           } else {
             this.CreateChatRoom(payload);
+            this.$router.push("/chat");
           }
         })
         .catch((error) => {
           console.log(error);
         });
     },
+
     CreateChatRoom(payload) {
       var chatData;
       chatData = {
@@ -125,23 +128,9 @@ export default {
     },
   },
 
-  // should change render just one time.....
   beforeCreate() {
-   
-    if (this.$store.state.updatePostCycle == 0) {
-      db.collection("posts")
-        .orderBy("date")
-        .get()
-        .then((snapshot) => {
-          snapshot.forEach((post) => {
-            var addUid = post.data();
-            addUid.uid = post.id;
-            this.$store.state.cardData.unshift(addUid);
-            this.$store.state.updatePostCycle += 1;
-          });
-        });
-    }
-     this.$store.commit("FetchLikes");
+    this.$store.commit("FetchPosts");
+    this.$store.commit("FetchLikes");
   },
 };
 </script>

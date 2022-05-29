@@ -1,5 +1,6 @@
 <template>
   <div class="container-bg">
+    <button @click="$store.commit('FetchPosts'), $store.commit('FetchLikes')" class="btn">Update</button>
     <Card />
   </div>
 </template>
