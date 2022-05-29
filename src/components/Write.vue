@@ -40,6 +40,7 @@ export default {
         uploadImageUrl: "https://placeimg.com/640/480/animals",
         likes: 0,
         date: new Date(),
+        liked: false,
       };
 
       if (this.uploadContent.length > 0) {

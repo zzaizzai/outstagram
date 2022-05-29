@@ -12,12 +12,11 @@ const store = createStore({
         return {
 
             updatePostCycle: 0,
+
             likedPost: {
                 uid: 0,
                 date: 0,
             },
-
-
 
 
             myUserData: {
@@ -30,59 +29,25 @@ const store = createStore({
             },
 
             cardData: [
-                {
-                    uid: 2,
-                    authorName: 'Jeorge',
-                    authorUid: "2",
-                    content: 'This is content that someone write the opinion who is more smarter and who is more idiot like me',
-                    authorProfileUrl: 'https://placeimg.com/500/500/people',
-                    uploadImageUrl: 'https://placeimg.com/640/480/nature',
-                    likes: 0,
-                    date: '22-2-3',
-                    liked: false
-                },
-                {
-                    uid: 3,
-                    authorName: 'Elaski',
-                    authorUid: "3",
-                    content: 'I wanna be a good human who can get monney with bitcoin, it means that i dont wanna work anymore',
-                    authorProfileUrl: 'https://placeimg.com/500/500/arch',
-                    uploadImageUrl: 'https://placeimg.com/500/500/arch',
-                    likes: 1,
-                    date: '22-2-4',
-                    liked: false
-                },
-                {
-                    uid: 4,
-                    authorName: 'Kims',
-                    authorUid: "4",
-                    content: 'Thats not my fault. dont blame me again',
-                    authorProfileUrl: 'https://placeimg.com/500/500/arch',
-                    uploadImageUrl: 'https://placeimg.com/640/480/tech/grayscale',
-                    likes: 0,
-                    date: '22-3-1',
-                    liked: false
-                },
+
             ],
             cardDataLiked: [
-                {
-                    postUid: 5,
-                    liked: true,
-                    didLikeUserUid: 1,
-                    date: '',
-                },
-                {
-                    postUid: 3,
-                    liked: true,
-                    didLikeUserUid: 1,
-                    date: '',
-                },
 
             ],
 
         }
     },
     mutations: {
+
+        GetUserDataFromStorage(state, payload) {
+            console.log(payload)
+            state.myUserData.uid = payload.uid
+            state.myUserData.userName = payload.userName
+            state.myUserData.userEmail = payload.userEmail
+            state.myUserData.userContent = payload.userContent
+
+
+        },
 
         // when you click heart button, chagne the db data and my state
         LikeToPost(state, payload) {
@@ -107,7 +72,11 @@ const store = createStore({
                     date: new Date,
                 }
 
-                db.collection('likes').add(likedData)
+                db.collection('likes').add(likedData).then((result) => {
+                    console.log(result)
+                    console.log("like +1  update done")
+
+                })
 
 
                 //when you cliked like button already
@@ -120,7 +89,9 @@ const store = createStore({
                 db.collection('likes').where("postUid", "==", payload.uid).get().then((querySnapshot) => {
                     querySnapshot.forEach((doc) => {
                         if (doc.data().didLikeUserUid == state.myUserData.uid) {
-                            db.collection('likes').doc(doc.id).delete()
+                            db.collection('likes').doc(doc.id).delete().then(() => {
+                                console.log("like -1  update done")
+                            })
                         }
                     })
                 })
@@ -160,7 +131,7 @@ const store = createStore({
         //get data from db when show post page
         FetchLikes(state) {
             state.cardDataLiked.splice(0, state.cardDataLiked.length)
-            db.collection('likes').where("didLikeUserUid", "==", state.myUserData.uid).onSnapshot((querySnapshot) => {
+            db.collection('likes').where("didLikeUserUid", "==", state.myUserData.uid).get().then((querySnapshot) => {
                 querySnapshot.forEach((doc) => {
                     console.log(doc.data())
                     state.cardDataLiked.unshift(doc.data())
@@ -174,6 +145,20 @@ const store = createStore({
 
                 })
             })
+
+        },
+        FetchPosts(state) {
+            state.cardData.splice(0, state.cardData.length)
+            db.collection("posts").orderBy("date").get().then((querySnapshot) => {
+                querySnapshot.forEach((post) => {
+                    var addUidandNormalDate = post.data();
+                    addUidandNormalDate.uid = post.id;
+                    addUidandNormalDate.date = addUidandNormalDate.date.toDate().toLocaleString();
+                    state.cardData.unshift(addUidandNormalDate);
+
+                });
+            });
+
 
         }
     },

@@ -74,13 +74,17 @@
 <script>
 import { defineComponent } from "vue";
 
-
 export default defineComponent({
   name: "App",
   data() {
     return {};
   },
-
+  created() {
+    var userInfo = JSON.parse(sessionStorage.getItem("user"));
+    if(userInfo) {
+      this.$store.commit('GetUserDataFromStorage', userInfo)
+    }
+  },
 });
 </script>
 
