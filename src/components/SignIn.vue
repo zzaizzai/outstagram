@@ -45,7 +45,7 @@
           {{ errorMessage }}
         </p>
         <p class="text-primary" id="success-message">{{ successMessage }}</p>
-        <p><router-link to="/signup" >be a friend</router-link></p>
+        <p><router-link to="/signup" >be our friend</router-link></p>
       </div>
     </div>
   </div>
@@ -62,8 +62,8 @@ export default {
     return {
       inputEmail: "test@gmail.com",
       inputPassword: "password",
-      errorMessage: "error",
-      successMessage: "success",
+      errorMessage: "",
+      successMessage: "",
     };
   },
   methods: {
@@ -101,7 +101,7 @@ export default {
                 uid: userInfo.data().uid,
                 userName: userInfo.data().userName,
                 userEmail: userInfo.data().userEmail,
-                userProfileurl: "https://placeimg.com/500/500/people",
+                userProfileurl:  userInfo.data().userProfileurl,
                 userContent: userInfo.data().userContent,
               };
 

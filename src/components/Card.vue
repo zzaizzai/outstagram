@@ -4,16 +4,31 @@
       <div class="card mx-auto" style="width: 25rem; border-radius: 10px">
         <div class="author-profile">
           <p
+            v-if="item.authorProfileUrl != 'none'"
             class="protifle-image"
             :style="{ backgroundImage: `url(${item.authorProfileUrl})` }"
-          ></p>
-          <p class="profile-name">{{ item.authorName }}</p>
+          />
+          <img
+            v-else
+            class="protifle-image-default"
+            src="./../assets/images/profileDefault.png"
+          />
+
+          <router-link
+            style="color: black; text-decoration-line: none"
+            v-bind:to="{
+              name: 'profile',
+              params: { id: item.authorName },
+            }"
+          >
+            <p class="profile-name">{{ item.authorName }}</p>
+          </router-link>
         </div>
         <!-- <img
           class="upload-image"
           :style="{ backgroundImage: `url(${item.uploadImageUrl})` }"
         /> -->
-        <div class="card-body">
+        <div class="card-body" style="padding-top: 8px">
           <div class="mb-3" style="clear: both">
             <p class="card-text">{{ item.content }}</p>
           </div>
@@ -45,7 +60,7 @@
               {{ item.likes }}
             </p>
             <img
-              @click="CheckChatRoomAndCreateChatRoom(item)"
+              @click="$store.commit('CheckChatRoomAndCreateChatRoom', item)"
               class="buttons-likes"
               src="./../assets/images/mail.png"
               style="float: left"
@@ -63,7 +78,6 @@
 
 <script>
 import cardData from "./../assets/dataCard";
-import { db } from "../main.js";
 
 export default {
   setup() {},
@@ -75,57 +89,6 @@ export default {
   props: {},
   watch: {},
   methods: {
-    CheckChatRoomAndCreateChatRoom(payload) {
-      var isChatRoomExist = false;
-      console.log(payload);
-
-      db.collection("chatroom")
-        .where("whoUid", "array-contains", this.$store.state.myUserData.uid)
-        .get()
-        .then((querySnapshot) => {
-          querySnapshot.forEach((doc) => {
-            console.log("already chatroom exist");
-            console.log(doc.data());
-            if (
-              doc.data().whoUid.includes(this.$store.state.myUserData.uid) &&
-              doc.data().whoUid.includes(payload.authorUid)
-            ) {
-              isChatRoomExist = true;
-            }
-          });
-          console.log(isChatRoomExist);
-          if (isChatRoomExist) {
-            this.$router.push("/chat");
-          } else {
-            this.CreateChatRoom(payload);
-            this.$router.push("/chat");
-          }
-        })
-        .catch((error) => {
-          console.log(error);
-        });
-    },
-
-    CreateChatRoom(payload) {
-      var chatData;
-      chatData = {
-        uid: "",
-        whoUid: [this.$store.state.myUserData.uid, payload.authorUid],
-        who: [this.$store.state.myUserData.userName, payload.authorName],
-        startDate: new Date(),
-        lastDate: new Date(),
-      };
-      console.log(chatData);
-      console.log(payload);
-      db.collection("chatroom")
-        .add(chatData)
-        .then((querySnapshot) => {
-          console.log(querySnapshot);
-        })
-        .catch((error) => {
-          console.log(error);
-        });
-    },
   },
 
   beforeCreate() {
@@ -142,6 +105,7 @@ body {
 .author-profile {
   padding-top: 10px;
   padding-left: 10px;
+  height: 50px;
 }
 .protifle-image {
   background-color: gray;
@@ -151,9 +115,19 @@ body {
   background-size: cover;
   float: left;
 }
+
+.protifle-image-default {
+  color: white;
+  border-radius: 100px;
+  height: 40px;
+  float: left;
+}
+
 .profile-name {
   float: left;
   padding: 10px;
+  padding-bottom: 0px;
+  margin-bottom: 0px;
 }
 
 .buttons p {

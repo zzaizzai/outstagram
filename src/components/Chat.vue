@@ -76,7 +76,13 @@
             <input class="form-control" id="chat-input" v-model="sendMessage" />
             <button class="btn btn-secondary" @click="SendMessage">send</button>
           </div>
-          <div class="down-button" style="font-size: 20px"  @click="ScrollToBottom">▽</div>
+          <div
+            class="down-button"
+            style="font-size: 20px"
+            @click="ScrollToBottom"
+          >
+            ▽
+          </div>
         </div>
       </div>
     </div>
@@ -93,6 +99,7 @@ export default {
     this.FetchChatRoom();
   },
   mounted() {
+    
   },
   data() {
     return {
@@ -100,6 +107,7 @@ export default {
       currentChatUid: "",
       chatOponent: "Kim",
       chatOponentUid: "2",
+      scrollHeightofChat: 0,
 
       chatContent: [],
       chatRoom: [
@@ -120,10 +128,16 @@ export default {
       ],
     };
   },
+  updated() {
+    this.scrollHeightofChat = this.$el.querySelector("#scrollMe").scrollHeight;
+    this.ScrollToBottom();
+  },
   methods: {
     ScrollToBottom() {
       let container = this.$el.querySelector("#scrollMe");
-      container.scrollTop = container.scrollHeight;
+      container.scrollTop = this.scrollHeightofChat
+      // container.scrollTop = container.scrollHeight;
+      // console.log(container.scrollHeight);
       console.log("scrolltobottom");
     },
     SendMessage() {
@@ -151,78 +165,32 @@ export default {
           console.log("Failed to send");
         });
 
-      this.ScrollToBottom();
-
       db.collection("chatroom")
         .doc(this.currentChatUid)
         .update({ lastDate: sendMessageData.date });
     },
 
-    // FetchMeesages(payload) {
-    //   console.log(payload)
-    //   db.collection("messages")
-    //     .where("parentUid", "==", payload)
-    //     .orderBy("date", "desc")
-    //     .onSnapshot((result) => {
-    //       this.chatContent.splice(0, this.chatContent.length);
-    //       result.forEach((doc) => {
-    //         this.chatContent.unshift(doc.data());
-    //       });
-    //       console.log('fetch message done')
-    //     });
-    // },
-    async FetchMeesages() {
+    FetchMeesages() {
       console.log(this.currentChatUid);
-
-      var getDB = new Promise((success) => {
-        db.collection("messages")
-          .where("parentUid", "==", this.currentChatUid)
-          .orderBy("date", "desc")
-          .onSnapshot((result) => {
-            this.chatContent.splice(0, this.chatContent.length);
-            result.forEach((doc) => {
-              var changedDate = doc.data();
-              changedDate.date = changedDate.date.toDate().toLocaleString();
-              this.chatContent.unshift(changedDate);
-            });
+      db.collection("messages")
+        .where("parentUid", "==", this.currentChatUid)
+        .orderBy("date", "desc")
+        .onSnapshot((result) => {
+          this.chatContent.splice(0, this.chatContent.length);
+          result.forEach((doc) => {
+            var changedDate = doc.data();
+            changedDate.date = changedDate.date.toDate().toLocaleString();
+            this.chatContent.unshift(changedDate);
           });
-        console.log("good");
-        success("good");
-      });
+          console.log("fetch message done");
+        });
 
-      try {
-        var result = await getDB;
-        console.log("currentchatuid: " + this.currentChatUid);
-        console.log("fetch message done");
-        this.ScrollToBottom();
-        console.log(result);
-      } catch {
-        console.log("promise wrong");
-      }
-
-      // db.collection("messages")
-      //   .where("parentUid", "==", this.currentChatUid)
-      //   .orderBy("date", "desc")
-      //   .onSnapshot((result) => {
-      //     this.chatContent.splice(0, this.chatContent.length);
-      //     result.forEach((doc) => {
-      //       console.log(doc.data());
-      //       console.log(doc.data().date);
-      //       var changedDate = doc.data();
-      //       changedDate.date = changedDate.date.toDate().toLocaleString();
-      //       this.chatContent.unshift(changedDate);
-      //     });
-      //   });
-
-      // console.log("currentchatuid: " + this.currentChatUid);
-      // console.log("fetch message done");
-      // this.ScrollToBottom();
     },
 
     FetchChatRoom() {
       var setCurrentChatUidAsLastestChatUid = 0;
       this.currentChatUid = "0";
-      console.log("temporay set curretn chat  uid 0")
+      console.log("temporay set curretn chat  uid 0");
 
       db.collection("chatroom")
         .where("whoUid", "array-contains", this.$store.state.myUserData.uid)
@@ -240,14 +208,12 @@ export default {
               .toLocaleString();
 
             this.chatRoom.push(addUidAndChangedDate);
-            this.ScrollToBottom();
 
             // set CurrentChatUid as LastestChatUid from db
             if (setCurrentChatUidAsLastestChatUid == 0) {
               this.currentChatUid = addUidAndChangedDate.uid;
-              console.log(this.currentChatUid)
+              console.log(this.currentChatUid);
               this.FetchMeesages(this.currentChatUid);
-              
             }
             setCurrentChatUidAsLastestChatUid += 1;
           });
@@ -271,10 +237,6 @@ export default {
     },
   },
   watch: {
-    chatContent() {
-      this.ScrollToBottom();
-      console.log("watching");
-    },
     chatRoom() {},
   },
 };
@@ -300,8 +262,9 @@ export default {
 
 .chat-content {
   height: 450px;
+  scrollbar-width: none;
   overflow-y: scroll;
-  padding: 10px;
+  padding: 15px;
 }
 .chat-content li {
   margin-top: 10px;
@@ -322,7 +285,7 @@ export default {
   font-size: 8px;
 }
 
-.down-button:hover{
+.down-button:hover {
   cursor: pointer;
 }
 </style>

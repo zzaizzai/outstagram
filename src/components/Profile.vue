@@ -2,32 +2,74 @@
   <div class="mypage-box">
     <div style="margin-top: 100px" class="p-4">
       <img
+        v-if="profileProfileUrl != 'none'"
         class="mypage-imag"
         alt=""
         :style="{
-          backgroundImage: `url(${$store.state.myUserData.userProfileurl})`,
+          backgroundImage: `url(${profileProfileUrl})`,
         }"
+      />
+      <img
+        v-else
+        class="mypage-default-image"
+        src="./../assets/images/profileDefault.png"
       />
     </div>
     <div>
-      <p>Name: {{ $store.state.myUserData.userName }}</p>
-      <p>Email: {{ $store.state.myUserData.userEmail }}</p>
-      <p>Comment: {{ $store.state.myUserData.userContent }}</p>
-      <p>{{ $store.state.myUserData.uid }}</p>
+      <p>Name: {{ profileName }}</p>
+      <p>Email: {{ profileEmail }}</p>
+      <p>Comment: {{ profileContent }}</p>
+      <p>{{ profileUid }}</p>
+      <h3 v-if="this.isProfileOwner==true" @click="ChangeYourProfile">+</h3>
     </div>
   </div>
 </template>
 
 <script>
+import { db } from "./../main.js";
+
 export default {
   data() {
     return {
-      user: "",
+      profileName: "",
+      profileEmail: "",
+      profileUid: "",
+      profileContent: "",
+      profileProfileUrl: "none",
+      isProfileOwner: false,
     };
   },
+  methods:{
+    ChangeYourProfile(){
+      console.log("change your profile")
+    }
 
-  mounted() {
-    this.user = this.$route.params.id;
+  },
+
+  created() {
+    this.profileName = this.$route.params.id;
+    db.collection("user")
+      .where("userName", "==", this.profileName)
+      .get()
+      .then((querySnapshot) => {
+        querySnapshot.forEach((doc) => {
+          console.log(doc.data());
+          this.profileName = doc.data().userName;
+          this.profileEmail = doc.data().userEmail;
+          this.profileUid = doc.data().uid;
+          this.profileContent = doc.data().userContent;
+          this.profileProfileUrl = doc.data().userProfileurl;
+
+          if (this.profileUid == this.$store.state.myUserData.uid) {
+            this.isProfileOwner = true;
+          } else {
+            return;
+          }
+        });
+        console.log("you are owner: " + this.isProfileOwner);
+      });
+
+    //if you are profile owner, you can edit your profile
   },
 };
 </script>
@@ -41,6 +83,13 @@ export default {
   background: cornsilk;
 }
 .mypage-imag {
+  width: 150px;
+  height: 150px;
+  background-size: cover;
+  border-radius: 100px;
+  float: left;
+}
+.mypage-default-image {
   width: 150px;
   height: 150px;
   background-size: cover;
