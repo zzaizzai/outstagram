@@ -3,6 +3,7 @@ import { createStore } from 'vuex'
 import { db } from "./main.js";
 import firebase from "firebase/app";
 import "firebase/firestore";
+import router from './router'
 
 
 
@@ -10,6 +11,7 @@ const store = createStore({
 
     state() {
         return {
+
 
             updatePostCycle: 0,
 
@@ -23,8 +25,8 @@ const store = createStore({
                 uid: '0',
                 userName: 'admin',
                 userEmail: 'parkdesssu@sds.com',
-                userProfileurl: 'https://placeimg.com/500/500/people',
-                userContent: 'Hello brothers',
+                userProfileurl: 'none',
+                userContent: 'none',
                 role: 'normal'
             },
 
@@ -45,6 +47,7 @@ const store = createStore({
             state.myUserData.userName = payload.userName
             state.myUserData.userEmail = payload.userEmail
             state.myUserData.userContent = payload.userContent
+            state.myUserData.userProfileurl = payload.userProfileurl
 
 
         },
@@ -117,7 +120,7 @@ const store = createStore({
                 uid: payload.uid,
                 userName: payload.userName,
                 userEmail: payload.userEmail,
-                userProfileurl: 'https://placeimg.com/500/500/people',
+                userProfileurl: payload.userProfileurl,
                 userContent: payload.userContent,
                 role: 'normal'
             }
@@ -160,7 +163,58 @@ const store = createStore({
             });
 
 
-        }
+        },
+
+        CheckChatRoomAndCreateChatRoom(state, payload) {
+            var isChatRoomExist = false;
+            console.log(payload);
+
+            db.collection("chatroom")
+                .where("whoUid", "array-contains", state.myUserData.uid)
+                .get()
+                .then((querySnapshot) => {
+                    querySnapshot.forEach((doc) => {
+                        console.log("already chatroom exist");
+                        console.log(doc.data());
+                        if (
+                            doc.data().whoUid.includes(state.myUserData.uid) &&
+                            doc.data().whoUid.includes(payload.authorUid)
+                        ) {
+                            isChatRoomExist = true;
+                        }
+                    });
+                    console.log(isChatRoomExist);
+                    if (isChatRoomExist) {
+                        router.push("/chat");
+                    } else {
+                        this.commit('CreateChatRoom ', payload);
+                        console.log("create new chat romm")
+
+                        var chatData;
+                        chatData = {
+                            uid: "",
+                            whoUid: [state.myUserData.uid, payload.authorUid],
+                            who: [state.myUserData.userName, payload.authorName],
+                            startDate: new Date(),
+                            lastDate: new Date(),
+                        };
+                        console.log(chatData);
+                        console.log(payload);
+                        db.collection("chatroom")
+                            .add(chatData)
+                            .then((querySnapshot) => {
+                                console.log(querySnapshot);
+                            })
+                            .catch((error) => {
+                                console.log(error);
+                            });
+                        router.push("/chat");
+                    }
+                })
+                .catch((error) => {
+                    console.log(error);
+                });
+        },
     },
     actions: {
 

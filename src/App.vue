@@ -45,7 +45,7 @@
                   style="color: black; text-decoration-line: none"
                   v-bind:to="{
                     name: 'profile',
-                    params: { id: $store.state.myUserData.userEmail },
+                    params: { id: $store.state.myUserData.userName },
                   }"
                 >
                   <img

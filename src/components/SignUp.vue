@@ -67,8 +67,8 @@ export default {
       inputEmail: "test@gmail.com",
       inputPassword: "password",
       inputName: "",
-      errorMessage: "error",
-      successMessage: "success",
+      errorMessage: "",
+      successMessage: "",
     };
   },
   methods: {
@@ -86,6 +86,35 @@ export default {
     },
 
     Register() {
+      var name = this.inputName;
+      var checkNameExist = false;
+
+      if (name.length < 4) {
+        this.errorMessage = "name should be at least 4 characters";
+        return;
+      } else if (name.length > 20) {
+        this.errorMessage = "name should be at most 20 characters";
+        return;
+      } else {
+        db.collection("user")
+          .where("userName", "==", name)
+          .get()
+          .then((querySnapshot) => {
+            querySnapshot.forEach((doc) => {
+              if (doc.data().userName == name) {
+                console.log("dd2");
+                checkNameExist = true;
+                this.errorMessage = "Error: " + name + " is already exists";
+                return;
+              }
+            });
+            if (checkNameExist == false) {
+              this.ResisterFirebase();
+            }
+          });
+      }
+    },
+    ResisterFirebase() {
       var email = this.inputEmail;
       var password = this.inputPassword;
       var name = this.inputName;
@@ -102,9 +131,9 @@ export default {
             uid: result.user.uid,
             userEmail: email,
             userName: name,
-            userProfileurl: "https://placeimg.com/500/500/people",
-            userContent: "Hello brothers",
-            role: 'normal'
+            userProfileurl: "none",
+            userContent: "Hello brothers sisters",
+            role: "normal",
           };
           console.log(inputUserData);
 
@@ -114,7 +143,7 @@ export default {
             .set(inputUserData)
             .then(() => {
               console.log("successfully Saved User data");
-              this.$store.dispatch('NewUserProfile',inputUserData )
+              this.$router.push("/signin");
             })
             .catch((error2) => {
               console.log(error2);
