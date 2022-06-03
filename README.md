@@ -1,27 +1,10 @@
-# outstagram
 
-## Project setup
-```
-npm install
-```
+front: Vue3
+backend, DB: firebase
 
-### Compiles and hot-reloads for development
-```
-npm run serve
-```
+oustagram is just made as my study project
 
-### Compiles and minifies for production
-```
-npm run build
-```
 
-### Lints and fixes files
-```
-npm run lint
-```
-
-### Customize configuration
-See [Configuration Reference](https://cli.vuejs.org/config/).
 
 npm install vue bootstrap bootstrap-vue
 npm install vuex@next --save
