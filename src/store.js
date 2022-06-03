@@ -12,6 +12,8 @@ const store = createStore({
     state() {
         return {
 
+            targetChatUid: "none",
+
 
             updatePostCycle: 0,
 
@@ -40,6 +42,11 @@ const store = createStore({
         }
     },
     mutations: {
+
+        ResetTargetChatUid(state) {
+            state.targetChatUid = "none"
+
+        },
 
         GetUserDataFromStorage(state, payload) {
             console.log(payload)
@@ -174,17 +181,19 @@ const store = createStore({
                 .get()
                 .then((querySnapshot) => {
                     querySnapshot.forEach((doc) => {
-                        console.log("already chatroom exist");
                         console.log(doc.data());
-                        if (
-                            doc.data().whoUid.includes(state.myUserData.uid) &&
-                            doc.data().whoUid.includes(payload.authorUid)
-                        ) {
+
+                        //check the target chatroom uid
+                        if (doc.data().whoUid[0] == payload.authorUid || doc.data().whoUid[1] == payload.authorUid) {
                             isChatRoomExist = true;
+                            state.targetChatUid = doc.id
+                            console.log("already chatroom exist");
                         }
+
                     });
                     console.log(isChatRoomExist);
                     if (isChatRoomExist) {
+
                         router.push("/chat");
                     } else {
                         this.commit('CreateChatRoom ', payload);
