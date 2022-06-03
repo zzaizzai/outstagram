@@ -20,7 +20,7 @@
       <p>Email: {{ profileEmail }}</p>
       <p>Comment: {{ profileContent }}</p>
       <p>{{ profileUid }}</p>
-      <h3 v-if="this.isProfileOwner==true" @click="ChangeYourProfile">+</h3>
+      <h3 class="btn btn-secondary" v-if="this.isProfileOwner == true" @click="ChangeYourProfile">Edit</h3>
     </div>
   </div>
 </template>
@@ -39,11 +39,10 @@ export default {
       isProfileOwner: false,
     };
   },
-  methods:{
-    ChangeYourProfile(){
-      console.log("change your profile")
-    }
-
+  methods: {
+    ChangeYourProfile() {
+      this.$router.push("/edit/profile");
+    },
   },
 
   created() {

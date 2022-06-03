@@ -2,6 +2,7 @@ import { createWebHistory, createRouter } from "vue-router";
 import Chat from './components/Chat.vue'
 import Home from './components/Home.vue'
 import Profile from './components/Profile.vue'
+import EditProfile from './components/EditProfile.vue'
 import Show404 from './components/Show404.vue'
 import Write from './components/Write.vue'
 import SignUp from './components/SignUp.vue'
@@ -25,6 +26,14 @@ const routes = [
     name: 'profile',
     path: "/profile/:id",
     component: Profile,
+    meta: {
+      requiresAuth: true
+    }
+  },
+  {
+    name: 'EditProfile',
+    path: "/edit/profile",
+    component: EditProfile,
     meta: {
       requiresAuth: true
     }

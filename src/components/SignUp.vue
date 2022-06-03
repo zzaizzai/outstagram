@@ -89,6 +89,7 @@ export default {
       var name = this.inputName;
       var checkNameExist = false;
 
+      //check userName the lengh and exist in DB
       if (name.length < 4) {
         this.errorMessage = "name should be at least 4 characters";
         return;
@@ -109,6 +110,8 @@ export default {
               }
             });
             if (checkNameExist == false) {
+
+              //if it is okay, gonna do signUp 
               this.ResisterFirebase();
             }
           });

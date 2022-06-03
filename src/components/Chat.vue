@@ -13,7 +13,7 @@
               @click="
                 currentChatUid = item.uid;
                 checkChatOponent(item);
-                FetchMeesages(item.parentUid);
+                FetchMeesages();
               "
               class="list-group-item chat-list-box"
             >
@@ -30,6 +30,8 @@
 
       <div class="col-6 p-3">
         <div>{{ chatOponent }}</div>
+        <!-- <div>target: {{ $store.state.targetChatUid }}</div> -->
+
         <div class="chat-room">
           <div></div>
           <ul
@@ -98,14 +100,15 @@ export default {
   created() {
     this.FetchChatRoom();
   },
-  mounted() {
-    
+  mounted() {},
+  unmounted() {
+    this.$store.commit('ResetTargetChatUid')
   },
   data() {
     return {
       sendMessage: "",
       currentChatUid: "",
-      chatOponent: "Kim",
+      chatOponent: "Chose chat oponent",
       chatOponentUid: "2",
       scrollHeightofChat: 0,
 
@@ -133,9 +136,23 @@ export default {
     this.ScrollToBottom();
   },
   methods: {
+    findTargetChatroom() {
+      if (this.$store.state.targetChatUid != "none") {
+        console.log("target: " + this.$store.state.targetChatUid);
+        var findTargetChatUid = this.chatRoom.find(
+          (v) => v.uid === this.$store.state.targetChatUid
+        );
+        if (findTargetChatUid) {
+          console.log("target" + findTargetChatUid);
+          this.currentChatUid = findTargetChatUid.uid;
+        } else {
+          console.log("some worng");
+        }
+      }
+    },
     ScrollToBottom() {
       let container = this.$el.querySelector("#scrollMe");
-      container.scrollTop = this.scrollHeightofChat
+      container.scrollTop = this.scrollHeightofChat;
       // container.scrollTop = container.scrollHeight;
       // console.log(container.scrollHeight);
       console.log("scrolltobottom");
@@ -184,11 +201,10 @@ export default {
           });
           console.log("fetch message done");
         });
-
     },
 
     FetchChatRoom() {
-      var setCurrentChatUidAsLastestChatUid = 0;
+      var setCurrentChatUidAsLastestChatUid = "0";
       this.currentChatUid = "0";
       console.log("temporay set curretn chat  uid 0");
 
@@ -210,14 +226,35 @@ export default {
             this.chatRoom.push(addUidAndChangedDate);
 
             // set CurrentChatUid as LastestChatUid from db
-            if (setCurrentChatUidAsLastestChatUid == 0) {
+            if (setCurrentChatUidAsLastestChatUid == "0") {
               this.currentChatUid = addUidAndChangedDate.uid;
               console.log(this.currentChatUid);
               this.FetchMeesages(this.currentChatUid);
+              this.checkChatOponent(addUidAndChangedDate);
             }
-            setCurrentChatUidAsLastestChatUid += 1;
+            setCurrentChatUidAsLastestChatUid = "done";
           });
           console.log("fetch chatroom done");
+
+          //if you cliked mail chat button at a card, you will see the chat content with the card owner
+          if (this.$store.state.targetChatUid != "none") {
+            console.log("target: " + this.$store.state.targetChatUid);
+            var findTargetChatUid = this.chatRoom.find(
+              (v) => v.uid === this.$store.state.targetChatUid
+            );
+            if (findTargetChatUid) {
+
+              this.currentChatUid = findTargetChatUid.uid;
+              this.FetchMeesages(this.currentChatUid);
+              this.checkChatOponent(findTargetChatUid);
+
+              //reset clciked log
+              this.$store.state.targetChatUid = "none";
+              return;
+            } else {
+              console.log("some worng");
+            }
+          }
         });
     },
 
